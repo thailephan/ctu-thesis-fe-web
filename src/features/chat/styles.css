@@ -1,0 +1,49 @@
+.chatTypingIndicatorContainer {
+    display: flex;
+    flex: none;
+    align-items: flex-end;
+    top:  -2.5rem;
+    left: 1rem;
+}
+
+.chatTypingIndicatorBubble {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: .75rem;
+}
+
+.chatTypingIndicatorBubbleDot {
+    width: 4px;
+    height: 4px;
+    margin-right: 4px;
+    background-color: #57585a;
+    border-radius: 50%;
+    animation-name: bounce;
+    animation-duration: 1.3s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.chatTypingIndicatorBubbleDot:first-of-type {
+    margin: 0px 4px;
+}
+
+.chatTypingIndicatorBubbleDot:nth-of-type(2) {
+    animation-delay: 0.15s;
+}
+
+.chatTypingIndicatorBubbleDot:nth-of-type(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes bounce {
+    0%,
+    60%,
+    100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-4px);
+    }
+}
