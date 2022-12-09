@@ -3,7 +3,8 @@ import {IMessage, IResult} from "../../common/interface";
 import {apiService, assetService} from "../../services";
 import {getMesasgeByChannel, saveMessage} from "../../common/indexdb";
 import {socket} from "../../components/socket";
-import {hidePageLoading, showPageLoading} from "./app.slice";
+import {hidePageLoading, init, showPageLoading} from "./app.slice";
+import {AuthState} from "./auth.slice";
 
 export interface ChatState {
     replyForId: number | null;
@@ -15,38 +16,7 @@ export interface ChatState {
 
 const initialState: ChatState = {
     replyForId: null,
-    messages: {
-        //   '41': {
-        //     channelId: 29,
-        //     id: 41,
-        //     createdAt: 1668951200,
-        //     messageTypeId: 1,
-        //     message: 'Ua dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dịUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dịUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dịUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dịUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dị hảUa dịCame down',
-        //     createdBy: 2,
-        //     status: 1,
-        //     replyForId: null
-        //   },
-        //   '42': {
-        //     channelId: 29,
-        //     id: 42,
-        //     createdAt: 1668951531,
-        //     messageTypeId: 1,
-        //     message: 'Ua dị hả',
-        //     createdBy: 1,
-        //     status: 1,
-        //     replyForId: null
-        //   },
-        //   '43': {
-        //     channelId: 29,
-        //     id: 43,
-        //     createdAt: 1668952574,
-        //     messageTypeId: 2,
-        //     message: '{"fileUrl":"/2022/nov/gap-gv-huong-dan-luan-van-205614-da8cc217a1.png","fileName":"gap-gv-huong-dan-luan-van.png","fileExt":"png","fileSize":77119}',
-        //     createdBy: 2,
-        //     status: 1,
-        //     replyForId: 41
-        //   }
-    },
+    messages: {},
     hasUnread: {},
     typingList: [],
     selectedChatChannelId: null,
@@ -74,21 +44,24 @@ export const selectChatChannel = createAsyncThunk<{
     }, number>("chat/selectChatChannel", async (channelId, thunkAPI) => {
     const newChannelId = channelId
     const result: {
-        selectedChatChannelId: any,
+        selectedChatChannelId: number,
         messages: {[key: number]: IMessage},
     } = {
         selectedChatChannelId: newChannelId,
         messages: {},
     };
     if (newChannelId) {
+        socket.emit("chat/message/seen", { channelId: newChannelId });
+        console.log("Oke 1");
         result.messages = await getMesasgeByChannel({ channelId: newChannelId })
     }
     return result;
 })
 
-export const addMessage = createAsyncThunk<any, { channelId: number, message: IMessage }, { state: {chat:ChatState} }>("chat/addMessage",  async (params, thunkAPI) => {
-    const { channelId, message } = params;
+export const addMessage = createAsyncThunk<any, { channelId: number, message: IMessage, emitterId: any }, { state: { chat:ChatState, auth: AuthState } }>("chat/addMessage",  async (params, thunkAPI) => {
+    const { channelId, message, emitterId } = params;
     const state: ChatState = thunkAPI.getState().chat;
+    const authState: AuthState = thunkAPI.getState().auth;
     const result: any = {};
 
     if (state.selectedChatChannelId === channelId) {
@@ -98,6 +71,15 @@ export const addMessage = createAsyncThunk<any, { channelId: number, message: IM
         result.hasUnread = {...state.hasUnread, [channelId]: true};
     }
     await saveMessage(message);
+
+    if (authState.user?.id !== emitterId) {
+        console.log(channelId, state.selectedChatChannelId);
+        if (channelId === state.selectedChatChannelId) {
+            socket.emit("chat/message/seen", { channelId });
+        } else {
+            socket.emit("chat/message/received", { channelId });
+        }
+    }
 
     return result;
 });
@@ -208,7 +190,7 @@ export const chatSlice = createSlice({
         // },
         sendChatMessage: (state, action) => {
             const message = action.payload.message;
-
+            console.log(message);
             socket.emit('chat/message/send', {
                 message:  message,
                 channelId: state.selectedChatChannelId,
@@ -245,6 +227,14 @@ export const chatSlice = createSlice({
                 state.typingList = action.payload.typingList;
             }
         },
+
+        resetChatState: (state) => {
+            state.selectedChatChannelId = null;
+            state.replyForId = null;
+            state.messages = {};
+            state.hasUnread = {};
+            state.typingList = [];
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -270,7 +260,8 @@ export const {
     setReplyFor, resetReplyFor,
     loadLocalMessage, deleteMessage, clearAllMessages, sendChatMessage,
     deSelectChatChannel,
-    updateTypingList
+    updateTypingList,
+    resetChatState,
 } = chatSlice.actions
 
 export default chatSlice.reducer

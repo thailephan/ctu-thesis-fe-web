@@ -1,13 +1,13 @@
 import { Box, Card, CardHeader, CardBody, DropButton } from 'grommet';
 import React from 'react';
 import { Outlet, Link } from "react-router-dom";
-import {MainNavMenu, PageLoading, Avatar} from "../components";
+import {MainNavMenu, PageLoading, Avatar, Notification} from "../components";
 import Screens from "../common/screens";
 import {useAppSelector} from "../store";
 
 function MainLayout() {
     const user = useAppSelector((state) => state.auth.user) || {};
-
+    console.log("main layout reload");
     return (
         <Box className="d-flex flex-row position-relative" style={{
             minHeight: "100vh",
@@ -50,6 +50,7 @@ function MainLayout() {
                 <Outlet />
             </Box>
             <PageLoading />
+            <Notification />
         </Box>
     );
 }

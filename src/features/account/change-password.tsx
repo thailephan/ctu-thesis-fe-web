@@ -1,38 +1,44 @@
 import React, { useState } from 'react';
-import { Button, Form } from "grommet";
+import { Button, Form, FormExtendedEvent } from "grommet";
 import { Hide, FormView, } from "grommet-icons";
-import Screens from "../../common/screens";
 import { useNavigate } from "react-router-dom";
 import { TextInput } from "../../components";
-import {signout} from "../../store/slices/auth.slice";
 import {useAppDispatch, useAppSelector} from "../../store";
 import {apiService} from "../../services";
+import {showNotification} from "../../store/slices/app.slice";
+import Screens from "../../common/screens";
 
 // Change password, delete account
 export default function ChangePasswordPage() {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    const { user = {} } = useAppSelector(state => state.auth);
 
-    const _onSubmit = async (e) => {
-        // TODO: Call services to send email and get validate code
-        // TODO: then insert code and call services check
-        // Ok then logout user to relogin
+    const _onSubmit = async (e: FormExtendedEvent<HTMLFormElement>) => {
+        e.preventDefault();
         try {
             const result = await apiService.Post({
                 path: "/users/changePassword",
                 data: e.value,
             });
             if (result.data.success) {
-                const redirectUrl = Screens.SIGNIN + "?email=" + user.email;
-                dispatch(signout());
-                navigate(redirectUrl);
+                dispatch(showNotification({
+                    content: "Đổi mật khẩu thành công",
+                    type: "ok",
+                }));
+                navigate(Screens.ACCOUNT);
             } else {
-                alert("Đã có lỗi xảy ra");
+                dispatch(showNotification({
+                    content: result.data.message,
+                    type: "error",
+                }));
             }
         } catch (e) {
-            console.log("Error")
+            console.log(e);
+            dispatch(showNotification({
+                content: "Đã có lỗi xảy ra",
+                type: "error",
+            }));
         }
     }
     return <>

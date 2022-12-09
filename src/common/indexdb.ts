@@ -35,8 +35,10 @@ export const saveMessage = async (message: any) => {
             store.add(message)
             return tx.done;
         }
+        console.log(store);
         return null;
-    } catch (e) {
+    } catch (e: any) {
+        console.log(e);
         return e.message;
     }
 }

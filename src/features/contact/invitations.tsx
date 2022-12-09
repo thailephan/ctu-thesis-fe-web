@@ -18,7 +18,7 @@ function ContactInvitationPage() {
                         maxHeight: 300,
                     }}>
                         <Text>
-                            Lời mời đã gửi
+                           Lời mời đã gửi
                         </Text>
                         <Box>
                             {sentInvitations.map(s => <SentInvitationItem {...s} key={s.email}/> )}
@@ -30,7 +30,7 @@ function ContactInvitationPage() {
                     maxHeight: 300,
                 }}>
                     <Text>
-                        Lời mời đã nhận
+                        Yêu cầu kết bạn
                     </Text>
                     <Box>
                         {receivedInvitations.map((s) => <ReceivedInvitationItem {...s} key={s.email}/> )}

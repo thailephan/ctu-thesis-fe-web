@@ -6,9 +6,11 @@ import {
     loadGroupChats,
     loadInvitations,
     loadUserChannels,
-    loadUserFriends,
+    loadUserFriends, resetAppState,
     showPageLoading
 } from "./app.slice";
+import {resetChatState} from "./chat.slice";
+import {socket} from "../../components/socket";
 
 export interface AuthState {
     accessToken?: string;
@@ -99,6 +101,7 @@ export const updateAuth = createAsyncThunk<{accessToken: string | null, user: an
                 thunkAPI.dispatch(loadUserFriends());
                 thunkAPI.dispatch(loadGroupChats());
                 thunkAPI.dispatch(loadInvitations());
+                thunkAPI.dispatch(loadUserData());
 
                 return {
                     accessToken,
@@ -134,15 +137,21 @@ export const loadUserData = createAsyncThunk("auth/loadUserData",
             return null;
         }
     });
+
+export const signout = createAsyncThunk("auth/signout", async (params, thunkAPI) => {
+    const dispatch = thunkAPI.dispatch;
+    await apiService.Post({
+        path: "/auth/logout",
+    });
+    socket.disconnect();
+    dispatch(resetChatState());
+    dispatch(resetAppState());
+    localStorage.clear();
+});
 export const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        signout: (state) => {
-            state.accessToken = undefined;
-            state.user = undefined;
-            localStorage.clear();
-        },
         updateUserAvatar: (state, action: PayloadAction<string>) => {
             state.user!.avatarUrl = action.payload;
         },
@@ -156,10 +165,13 @@ export const authSlice = createSlice({
             state.accessToken = action.payload.accessToken;
         }).addCase(loadUserData.fulfilled, (state, action: any) => {
             state.user = action.payload;
-        });
+        }).addCase(signout.fulfilled, (state) => {
+           state.user = undefined;
+           state.accessToken = undefined;
+        })
     }
 })
 
-export const { signout, updateUserAvatar, updateUserInformation } = authSlice.actions
+export const { updateUserAvatar, updateUserInformation } = authSlice.actions
 
 export default authSlice.reducer

@@ -5,6 +5,8 @@ import {updateAuth} from "./auth.slice";
 import {IUser, IChannel, IFriend, ISentInvitation, IReceivedInvitation} from "../../common/interface";
 import {socket} from "../../components/socket";
 
+type NotificationType = "ok" | "error" | "warning" | "default";
+
 export interface AppState {
     isPageLoading: boolean,
     channels: IChannel[],
@@ -13,6 +15,11 @@ export interface AppState {
     users: IUser[],
     sentInvitations: ISentInvitation[],
     receivedInvitations: IReceivedInvitation[],
+    notification: {
+        content: any,
+        duration: number,
+        type: NotificationType,
+    },
 }
 
 const initialState: AppState = {
@@ -23,6 +30,11 @@ const initialState: AppState = {
     users: [],
     sentInvitations: [],
     receivedInvitations: [],
+    notification: {
+        content: null,
+        duration: 5000,
+        type: "default"
+    },
 }
 
 const verifyToken = async () => {
@@ -163,7 +175,7 @@ export const loadInvitations = createAsyncThunk<{sent: ISentInvitation[], receiv
     } catch (e) {
         return failedCase;
     }
-})
+});
 
 export const appSlice = createSlice({
     name: 'app',
@@ -185,6 +197,36 @@ export const appSlice = createSlice({
         },
         removeSentInvitation: (state, action: PayloadAction<number>) => {
             state.sentInvitations = state.sentInvitations.filter(s => s.receiverId !== action.payload);
+        },
+        acceptFriendInvitation: (state, action: PayloadAction<{senderId: number}>) => {
+            socket.emit("invitation/accept", { senderId: action.payload.senderId });
+        },
+
+
+        showNotification: (state, action: PayloadAction<{content: any, duration?: number, type?: NotificationType}>) => {
+            state.notification.content = action.payload.content;
+            state.notification.type = action.payload.type || "default";
+            state.notification.duration = action.payload.duration || state.notification.duration;
+        },
+        hideNotification: (state) => {
+            state.notification.content = null;
+            state.notification.type = "default";
+            state.notification.duration = 3000;
+        },
+
+        resetAppState: (state) => {
+            state.isPageLoading = false;
+            state.channels = [];
+            state.groups = [];
+            state.friends = [];
+            state.users = [];
+            state.sentInvitations = [];
+            state.receivedInvitations = [];
+            state.notification = {
+                content: null,
+                duration: 5000,
+                type: "default"
+            };
         }
     },
     extraReducers: (builder) => {
@@ -259,7 +301,9 @@ export const appSlice = createSlice({
 
 export const {
     showPageLoading, hidePageLoading,
-    cancelInvitation, removeSentInvitation
+    cancelInvitation, removeSentInvitation, acceptFriendInvitation,
+    showNotification, hideNotification,
+    resetAppState,
 } = appSlice.actions
 
 export default appSlice.reducer

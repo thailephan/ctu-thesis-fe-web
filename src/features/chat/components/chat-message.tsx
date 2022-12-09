@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { format } from 'date-fns';
 import { Button, Box, Card, CardBody, Text, Avatar, CardFooter, CardHeader, Footer, Image, DropButton, Menu } from "grommet";
 import { User, Download, Document, More } from "grommet-icons";
@@ -12,7 +12,7 @@ interface IChatMessageProps {
     isMine?: boolean;
 }
 
-function ChatMessage({message, isMine = false}: IChatMessageProps) {
+function ChatMessage({message, isMine = false }: IChatMessageProps) {
     const dispatch = useAppDispatch();
     const { messages } = useAppSelector(state => state.chat) || {};
     const [imageZoomUrl, setImageZoomUrl] = useState("");
@@ -107,8 +107,9 @@ function ChatMessage({message, isMine = false}: IChatMessageProps) {
 
     if (isMine) {
         return (
-            <Box className="align-items-end" style={{
-                paddingLeft: "10%"
+            <Box className="align-items-end chat-channel-message" style={{
+                paddingLeft: "10%",
+                minHeight: 100,
             }}>
                 {_renderReplyMessage()}
                 <Box className="d-flex flex-row gap-3 flex-row-reverse">
@@ -146,9 +147,10 @@ function ChatMessage({message, isMine = false}: IChatMessageProps) {
             </Box>);
     }
 
-    return (<Box className="d-flex flex-row gap-3 flex-row me-auto" style={{
-                paddingRight: "10%"
-            }}>
+    return (<Box className="d-flex flex-row gap-3 flex-row me-auto chat-channel-message" style={{
+                paddingRight: "10%",
+                minHeight: 100,
+        }}>
         <div>
             <Button>
                 {senderAvatarUrl
@@ -161,7 +163,7 @@ function ChatMessage({message, isMine = false}: IChatMessageProps) {
         </div>
         <Box className="flex-row gap-3">
             <Card background="light-1" style={{
-                minWidth: 100
+                minWidth: 100,
             }} className="py-3 w-100">
                 <CardHeader className="px-3">
                     <Text size="xsmall" color="dark-3">{senderFullName} {id}</Text>

@@ -70,7 +70,7 @@ function ForgotPasswordPage() {
                                 status: "error"
                             }]} className="col-12 col-md-9 p-0">
                                 <TextInput
-                                    placeholder="Abc@gmail.com"
+                                    placeholder="abc@gmail.com"
                                     id="email" name="email"
                                 />
                             </FormField>

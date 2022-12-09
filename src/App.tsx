@@ -9,17 +9,19 @@ import {
     AccountPage,
     NotFoundPage,
     LogoutPage,
-    ConfirmResetPassword
+    ConfirmResetPassword, ActivateAccountPage
 } from './features';
-import { MainLayout } from "./layout";
+import {AppLayout, MainLayout} from "./layout";
 import { Grommet } from "grommet";
+import { useAppSelector } from "./store";
 import Screens from "./common/screens";
 import ChangePasswordPage from "./features/account/change-password";
 import UserInformationPage from "./features/account/user-information";
-import { useAppSelector } from "./store";
+import AccountSettingPage from "./features/account/account-setting";
 import ContactFriendPage from "./features/contact/contact-friend";
 import ContactGroupPage from "./features/contact/contact-group";
 import ContactInvitationPage from "./features/contact/invitations";
+import ContactSearchPage from "./features/contact/contact-search";
 
 function App() {
     const auth = useAppSelector(state => state.auth);
@@ -42,6 +44,9 @@ function App() {
             }, {
                 path: Screens.CONTACT,
                 element: <ContactFriendPage />
+            }, {
+                path: Screens.CONTACT_SEARCH,
+                element: <ContactSearchPage />
             }, ]
         }, {
             path: Screens.ACCOUNT,
@@ -52,6 +57,9 @@ function App() {
             }, {
                 path: Screens.ACCOUNT,
                 element: <UserInformationPage/>
+            }, {
+                path: Screens.ACCOUNT_SETTING,
+                element: <AccountSettingPage/>,
             },],
         }, {
             path: Screens.LOGOUT,
@@ -59,7 +67,7 @@ function App() {
         }],
     }, {
         path: Screens.ROOT,
-        element: auth.user ? <Navigate to={Screens.HOME} /> : <Outlet />,
+        element: auth.user ? <Navigate to={Screens.HOME} /> : <AppLayout />,
         children: [{
             path: Screens.ROOT,
             element: <Navigate to={Screens.SIGNIN}/>
@@ -72,10 +80,13 @@ function App() {
         }, {
             path: Screens.FORGOT_PASSWORD,
             element: <ForgotPasswordPage/>,
-        },  {
+        }, {
             path: Screens.CONFIRM_RESET_PASSWORD,
             element: <ConfirmResetPassword />,
-        }, ]
+        }, {
+            path: Screens.ACTIVATE_ACCOUNT,
+            element: <ActivateAccountPage />,
+        }]
     }, {
         path: Screens.FALL_OUT,
         element: <NotFoundPage/>,

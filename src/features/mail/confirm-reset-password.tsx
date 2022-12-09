@@ -1,23 +1,57 @@
-import React, {useState} from 'react';
-import {useAppDispatch, useAppSelector} from "../../store";
+import React, {useEffect, useState} from 'react';
+import { useAppDispatch } from "../../store";
 import {signout} from "../../store/slices/auth.slice";
 import Screens from "../../common/screens";
 import { apiService } from '../../services';
 import { TextInput } from '../../components';
-import { Button, Form, Card, Box, CardBody, Heading, CardHeader } from 'grommet';
+import { Button, Form, Card, Box, CardBody, Heading, CardHeader, Spinner } from 'grommet';
 import { Hide, FormView } from "grommet-icons";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import {Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 
 function ConfirmResetPassword() {
     const navigate = useNavigate();
     const [searchParams, ] = useSearchParams();
-
     const dispatch = useAppDispatch();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [isCodeExpired, setIsCodeExpired] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const code = searchParams.get("code");
 
-    const _onSubmit = async (e) => {
-        const code = searchParams.get("code");
+    if (!code) {
+        return <Navigate to="/" replace />
+    }
 
+    useEffect(() => {
+        async function init() {
+            const result = await apiService.Get({
+                path: `/validate-code/${code}`,
+            });
+            if (result.data.success) {
+                setIsCodeExpired(false);
+            } else {
+                setIsCodeExpired(true);
+                console.log(result.data.message);
+            }
+            setIsLoading(false);
+        }
+        init();
+    }, [])
+
+    if (isLoading) {
+        return <Box className="w-100 align-items-center justify-content-center">
+            <Spinner size="medium"/>
+        </Box>
+    }
+
+    if (isCodeExpired) {
+        return <div className="p-2">
+            <span>Link đã hết hạn. Vui lòng tắt link này và chọn
+                &nbsp;<Link to={Screens.FORGOT_PASSWORD}><Button primary className="p-2 rounded">quên mật khẩu</Button></Link>
+                &nbsp;để lấy link reset mật khẩu mới</span>
+        </div>
+    }
+
+    const _onSubmit = async (e: any) => {
         try {
             const result = await apiService.Post({
                 path: "/users/confirmResetPassword",

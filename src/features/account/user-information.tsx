@@ -7,7 +7,7 @@ import {useAppDispatch, useAppSelector} from "../../store";
 import { format, getUnixTime, subYears, startOfYear} from 'date-fns';
 import {loadUserData, updateUserAvatar} from "../../store/slices/auth.slice";
 import Constants from "../../common/constants";
-import {hidePageLoading, showPageLoading} from "../../store/slices/app.slice";
+import {hidePageLoading, showNotification, showPageLoading} from "../../store/slices/app.slice";
 import {apiService, assetService} from "../../services";
 import {socket} from "../../components/socket";
 
@@ -19,12 +19,6 @@ function UserInformationPage() {
     const { user = {} } = useAppSelector((state) => state.auth);
     const dispatch = useAppDispatch();
 
-    useEffect(() => {
-       dispatch(loadUserData());
-    }, [])
-
-    // console.log(user.birthday, user.birthday && format(new user.birthday * 1000, "dd/MM/yyyy"));
-
     const _onSubmit = async (e: any) => {
         console.log(e.value.birthday, getUnixTime(new Date(e.value.birthday)));
         const formValue = {
@@ -34,16 +28,7 @@ function UserInformationPage() {
             birthday: e.value.birthday ? getUnixTime(new Date(e.value.birthday)) : undefined,
             gender: e.value.gender && e.value.gender ===  1 ? 1 : 0
         };
-        const result = await apiService.Post({
-            path: "/users/update",
-            data: formValue,
-        })
-        if (result.data.success) {
-            socket.emit("user/updateInformation", user);
-            dispatch(loadUserData());
-        } else {
-            alert("Đã có lỗi xảy ra");
-        }
+        socket.emit("user/updateInformation", formValue);
         setIsEdit(false);
     }
 
@@ -82,17 +67,6 @@ function UserInformationPage() {
                         defaultValue: user.fullName
                     }}
                     formFieldProps={{
-                        // validate: [(fieldValue: string) => fieldValue?.length > 0 && ([
-                        //     {
-                        //         regexp: Constants.RegExp.TEXT_WITHOUT_WHITESPACE_START_OR_END,
-                        //         message: "Trường không chứa khoảng trắng ở cuối",
-                        //         status: "error",
-                        //     }, {
-                        //         regexp: Constants.RegExp.VIETNAMESE_TEXT_NO_SPACE,
-                        //         message: "Trường chỉ gồm số hoặc ký tự",
-                        //         status: "error",
-                        //     },
-                        // ]),]
                         validate: [(fieldValue: string) => (user.fullName || fieldValue?.length > 0) && !Constants.RegExp.TEXT_WITHOUT_WHITESPACE_START_OR_END.test(fieldValue) && (
                             {
                                 message: "Trường không chứa khoảng trắng ở cuối",
@@ -121,15 +95,6 @@ function UserInformationPage() {
                         defaultValue: user.phoneNumber
                     }}
                     formFieldProps={{
-                        // validate: [{
-                        //     regexp: /^0.*$/,
-                        //     message: "Số điện thoại bắt đầu bằng số 0",
-                        //     status: "error",
-                        // },{
-                        //     regexp: /^0\d{9}$/,
-                        //     message: "Phải gồm 10 chữ số, không chứa khoảng trắng",
-                        //     status: "error",
-                        // },],
                         validate: [(fieldValue: string) => (user.phoneNumber || fieldValue.length > 0) && !/^0.*$/.test(fieldValue) && ({
                             message: "Số điện thoại bắt đầu bằng số 0",
                             status: "error",
@@ -211,7 +176,10 @@ function UserInformationPage() {
         const fileNameSplitor = e.target.value.split(".");
         const fileExt = fileNameSplitor[fileNameSplitor.length - 1];
         if (['jpeg', "jpg", "png"].every(v => v !== fileExt)) {
-            alert("Chỉ được chọn ảnh có đuôi jpg, jpeg hoặc png");
+            dispatch(showNotification({
+                content: "Chỉ được chọn ảnh có đuôi jpg, jpeg hoặc png",
+                type: "error",
+            }))
         } else if (confirm("Xác nhận cập nhật ảnh đại diện không?")) {
             let formData = new FormData();
 
@@ -222,29 +190,22 @@ function UserInformationPage() {
                 const result = await assetService.PostFormData({
                     path: "/users/upload-avatar",
                     data: formData,
-                })
+                });
 
                 if (result.data.success) {
                     const avatarUrl = result.data.data;
-                    const uploadImageResult = await apiService.Post({
-                        path: "/users/updateAvatar",
-                        data: {
-                            avatarUrl,
-                        },
-                    })
-
-                    if (uploadImageResult.data.success) {
-                        socket.emit("user/updateAvatar", ({avatarUrl}));
-                        dispatch(updateUserAvatar(avatarUrl));
-                        alert("Cập nhật ảnh đại diện thành công");
-                    } else {
-                        alert("Đã có lỗi xảy ra");
-                    }
+                    socket.emit("user/updateAvatar", ({avatarUrl}));
                 } else {
-                    alert("Đã có lỗi xảy ra");
+                    dispatch(showNotification({
+                        content: result.data.message,
+                        type: "error",
+                    }))
                 }
             } catch (e) {
-                alert("Đã có lỗi xảy ra");
+                dispatch(showNotification({
+                    content: "Đã có lỗi xảy ra",
+                    type: "error",
+                }))
                 console.log("onChangeUserAvatar", e)
             } finally {
                 dispatch(hidePageLoading());

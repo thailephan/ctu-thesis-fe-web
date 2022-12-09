@@ -1,15 +1,15 @@
-import React, {useState} from 'react';
-import { Card, CardHeader, CardBody, CardFooter, Button, Heading, Text, Form,  Box } from "grommet";
+import React, {useRef, useState} from 'react';
+import { Card, CardHeader, CardBody, CardFooter, Button, Heading, Text, Form,  Box, CheckBox } from "grommet";
 import { FormView, Hide } from "grommet-icons";
 import { Link, useNavigate } from "react-router-dom";
-import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { CredentialResponse } from '@react-oauth/google';
 import helpers from "../../common/helpers";
 import Screens from "../../common/screens";
 import { TextInput } from "../../components";
 
 import axios from "axios";
 import {useAppDispatch} from "../../store";
-import {hidePageLoading, showPageLoading} from "../../store/slices/app.slice";
+import {hidePageLoading, showNotification, showPageLoading} from "../../store/slices/app.slice";
 
 interface IProps {
 
@@ -19,22 +19,35 @@ function SignUpPage(props: IProps) {
     const navigate = useNavigate();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const dispatch = useAppDispatch();
-
+    const registerRef = useRef<any>(null);
     const _onSubmit = async (e: any) => {
         e.preventDefault();
         dispatch(showPageLoading());
-        const result: any = await axios.post("http://localhost:4001/auth/register", {
-            fullName: e.value.fullName,
-            email: e.value.email,
-            password: e.value.password,
-        });
+        const path = `http://localhost:4001/auth/${ registerRef?.current?.checked ? "registerMustActivate" : "register" }`;
+        try {
+            const result: any = await axios.post(path, {
+                fullName: e.value.fullName,
+                email: e.value.email,
+                password: e.value.password,
+            });
 
-        dispatch(hidePageLoading());
-        if (result.data.success) {
-            sessionStorage.setItem("token", result.data.accessToken);
-            navigate(Screens.HOME);
-        } else {
-            alert("Đã có lỗi xảy ra");
+            dispatch(hidePageLoading());
+            if (result.data.success) {
+                if (registerRef.current.checked) {
+                   dispatch(showNotification({
+                       content: "Đăng ký tài khoản thành công. Vui lòng kiểm tra email để kích hoạt tài khoản",
+                       type: "ok",
+                   }));
+                } else {
+                    sessionStorage.setItem("token", result.data.accessToken);
+                }
+                navigate(Screens.HOME);
+            } else {
+                alert(result.data.message);
+            }
+        } catch (e) {
+           alert("Đã có lỗi xảy ra");
+            console.error(e);
         }
     }
 
@@ -84,6 +97,10 @@ function SignUpPage(props: IProps) {
                                     : <Button secondary className="py-2" onClick={() => setIsPasswordVisible(true)}><FormView /> Xem mật khẩu</Button>
                                 }
                                 <Button primary className="py-2 px-3" type="submit">Đăng ký tài khoản</Button>
+                                <div>
+                                    <CheckBox ref={registerRef}/>
+                                    <span>Phài xác thực</span>
+                                </div>
                             </div>
                         </Form>
                     </div>

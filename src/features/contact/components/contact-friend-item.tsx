@@ -8,6 +8,7 @@ import { Chat, Close } from "grommet-icons";
 import { Avatar, Tip } from "../../../components";
 import {selectChatChannel} from "../../../store/slices/chat.slice";
 import {apiService} from "../../../services";
+import {socket} from "../../../components/socket";
 
 interface IProps extends IFriend {
     className?: string;
@@ -67,7 +68,7 @@ function ContactFriendItem(props: IProps) {
                 }}>
                     <Button onClick={(e) => {
                         e.stopPropagation();
-                        dispatch(selectChatChannel(props.friendId));
+                        dispatch(selectChatChannel(props.channelId));
                         navigate(Screens.HOME);
                     }}>
                         <Box background="brand" className="flex-row align-items-center justify-content-center p-2 rounded">
@@ -80,7 +81,7 @@ function ContactFriendItem(props: IProps) {
                 }}>
                     <Button onClick={(e) => {
                         e.stopPropagation();
-                        dispatch(selectChatChannel(props.friendId));
+                        socket.emit("friend/unfriend", { receiverId: props.friendId });
                         navigate(Screens.HOME);
                     }}>
                         <Box className="flex-row align-items-center justify-content-center p-2 rounded">

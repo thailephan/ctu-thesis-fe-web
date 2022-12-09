@@ -9,7 +9,7 @@ import { TextInput } from "../../components";
 
 import { useAppDispatch } from "../../store";
 import {updateAuth} from "../../store/slices/auth.slice";
-import {hidePageLoading, showPageLoading} from "../../store/slices/app.slice";
+import {hidePageLoading, showNotification, showPageLoading} from "../../store/slices/app.slice";
 import {apiService} from "../../services";
 
 function SignInPage() {
@@ -32,14 +32,24 @@ function SignInPage() {
 
             if (result.data.success) {
                 dispatch(updateAuth(result.data.data.accessToken));
+                dispatch(showNotification({
+                    type: "ok",
+                    content: "Đăng nhập thành công",
+                }));
                 navigate(Screens.HOME);
             } else {
-                alert("Tài khoản hoặc mật khẩu không chính xác");
+                dispatch(showNotification({
+                   type: "error",
+                   content: result.data.message,
+                }));
             }
             dispatch(hidePageLoading());
         } catch (e) {
             dispatch(hidePageLoading());
-            alert("Đã có lỗi xảy ra");
+            dispatch(showNotification({
+                type: "error",
+                content: "Đã có lỗi xảy ra",
+            }));
             console.log(e);
         }
     }
