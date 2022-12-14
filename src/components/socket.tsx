@@ -4,7 +4,7 @@ import {service} from "../config";
 import {useAppDispatch, useAppSelector} from "../store";
 import {updateUserAvatar, updateUserInformation} from "../store/slices/auth.slice";
 import {addMessage, selectChatChannel, updateTypingList} from "../store/slices/chat.slice";
-import {removeSentInvitation, showNotification} from "../store/slices/app.slice";
+import {loadUserFriends, removeSentInvitation, showNotification} from "../store/slices/app.slice";
 
 export const socket: Socket = io(service.chatUrl, {
         autoConnect: false,
@@ -122,15 +122,57 @@ function SocketConnector() {
             }
         });
 
-        socket.on("invitation/cancel", ({emitterId, receiverId}) => {
+        socket.on("invitations/send", ({ emitterId, receiverId }) => {
+            if (user) {
+                console.log(emitterId, receiverId);
+                if (user.id === emitterId) {
+                    dispatch(showNotification({
+                        content: "Gửi lời mời kết bạn thành công",
+                        type: "ok",
+                    }));
+                }
+                if (user.id === receiverId) {
+                    dispatch(showNotification({
+                        content: "Có người gửi lời mời kết bạn đến bạn",
+                        type: "ok",
+                    }));
+                }
+            }
+        });
+        socket.on("invitations/send/error", (error) => {
+            dispatch(showNotification({
+                content: error,
+                type: "error",
+            }));
+        });
+        socket.on("invitation/cancel", (data) => {
+            const {senderId, receiverId} = data;
+            console.log(data);
             dispatch(removeSentInvitation(receiverId));
+            if (user) {
+                if (senderId === user.id) {
+                    dispatch(showNotification({
+                        content: "Hủy lời mời kết bạn thành công",
+                        type: "ok",
+                    }));
+                } else {
+                    dispatch(showNotification({
+                        content: senderId + " đã hủy lời mời kết bạn",
+                        type: "warning",
+                    }));
+                }
+            }
         });
         socket.on("invitation/accept", ({emitterId, receiverId}) => {
             console.log({emitterId, receiverId});
         });
 
         socket.on("friend/unfriend", (data) => {
-            console.log(data);
+            dispatch(showNotification({
+                content: "Xóa bạn bè thành công",
+                type: "ok",
+            }))
+            dispatch(loadUserFriends());
         });
 
         return () => {

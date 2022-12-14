@@ -23,16 +23,4 @@ store.dispatch(init()).then(() => {
     )
 });
 
-// storeMessage(
-//     {
-//         channelId: 30,
-//         id: 46,
-//         createdAt: 1668952574,
-//         messageTypeId: 2,
-//         message: '{"fileUrl":"/2022/nov/gap-gv-huong-dan-luan-van-205614-da8cc217a1.png","fileName":"gap-gv-huong-dan-luan-van.png","fileExt":"png","fileSize":77119}',
-//         createdBy: 2,
-//         status: 1,
-//         replyForId: 41
-//     }
-// ).then(a => console.log(a));
-getMesasgeByChannel({channelId: 29}).then(a => console.log(a));
+// getMesasgeByChannel({channelId: 29}).then(a => console.log(a));

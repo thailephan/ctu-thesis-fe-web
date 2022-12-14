@@ -334,6 +334,9 @@ const APIAccessor = (config: IConfiguration, httpClient: any = axios.create()) =
                     }
                     if (response.status === Constants.ApiCode.NOT_AUTHORIZE) {
                         // __EventEmitter.emit(Constants.EventName.TOKEN_EXPIRED);
+                        // alert("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại");
+                        // localStorage.clear();
+                        throw Error("\"Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại\"");
                         console.log("Error token expired");
                         return;
                     }

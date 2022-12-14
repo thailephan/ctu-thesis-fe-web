@@ -4,7 +4,7 @@ import { Button, Box, Text } from "grommet";
 import { Avatar } from "../../../components";
 import clsx from "clsx";
 import {useAppDispatch} from "../../../store";
-import {acceptFriendInvitation, cancelInvitation} from "../../../store/slices/app.slice";
+import {acceptFriendInvitation, rejectFriendInvitation} from "../../../store/slices/app.slice";
 
 function ReceivedInvitationItem(props: IReceivedInvitation) {
     const dispatch = useAppDispatch();
@@ -24,6 +24,7 @@ function ReceivedInvitationItem(props: IReceivedInvitation) {
                 <Text size="small" className="text-white">Chấp thuận</Text>
             </Button>
             <Button className="px-3 border bg-danger rounded" onClick={() => {
+                dispatch(rejectFriendInvitation({ senderId : props.senderId }));
             }}>
                 <Text size="small" className="text-white">Từ chối</Text>
             </Button>

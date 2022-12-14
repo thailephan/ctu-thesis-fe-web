@@ -3,7 +3,7 @@ import { useAppDispatch } from "../../../store";
 import {IFriend, IUser} from "../../../common/interface";
 import Screens from "../../../common/screens";
 import { useNavigate } from 'react-router-dom';
-import { Button, Box, Text, Spinner } from "grommet";
+import { Button, Box, Text, Spinner, Card } from "grommet";
 import { Chat, Close } from "grommet-icons";
 import { Avatar, Tip } from "../../../components";
 import {selectChatChannel} from "../../../store/slices/chat.slice";
@@ -27,11 +27,9 @@ function ContactFriendItem(props: IProps) {
             try {
                 if (isShowInformation) {
                     const loadUser = await apiService.Get({
-                        path: "/users/getUserById",
-                        data: {
-                            id: props.friendId,
-                        },
+                        path: "/users/getUserById/" + props.friendId,
                     });
+                    console.log(loadUser);
                     if (loadUser.data.success) {
                         setUser(loadUser.data.data);
                     } else {
@@ -40,6 +38,7 @@ function ContactFriendItem(props: IProps) {
                 }
             } catch (e) {
                 setUser(null);
+                console.log(e);
             } finally {
                 setLoading(false);
             }
@@ -81,8 +80,9 @@ function ContactFriendItem(props: IProps) {
                 }}>
                     <Button onClick={(e) => {
                         e.stopPropagation();
-                        socket.emit("friend/unfriend", { receiverId: props.friendId });
-                        navigate(Screens.HOME);
+                        if (confirm("Bạn có chắc hủy kết bạn? Việc này sẽ xóa cuộc trò chuyện của bạn và " + props.fullName)) {
+                            socket.emit("friend/unfriend", { receiverId: props.friendId });
+                        }
                     }}>
                         <Box className="flex-row align-items-center justify-content-center p-2 rounded">
                             <Close />
@@ -93,21 +93,42 @@ function ContactFriendItem(props: IProps) {
         </Box>
 
         {isShowInformation && (
-            <Box className="align-items-center justify-content-center w-100 h-100 position-absolute top-0" style={{
+            <Box className="align-items-center justify-content-center w-100 h-100 position-absolute top-0 border" style={{
                 zIndex: 21,
                 left: 0,
-                backgroundColor: "#FFFFFF88",
+                backgroundColor: "#AAAAAA88",
             }} onClick={() => setIsShowInformation(false)}>
-                {loading ? (
-                    <Box>
-                        <Spinner />
+                {loading ? <div><Spinner /></div> : (
+                    user ? (<Box background="light-1" pad="medium" className="gap-3">
+                        <Box className="flex-row align-items-center justify-content-center">
+                            <Avatar src={user.avatarUrl}/>
+                        </Box>
+                        <Box className="flex-row gap-3 justify-content-between">
+                            <Text style={{
+                                width: 200,
+                            }}>Họ tên (tên hiển thị)</Text>
+                            <Text>{user.fullName}</Text>
+                        </Box>
+                        <Box className="flex-row gap-3 justify-content-between">
+                            <Text style={{
+                                width: 200,
+                            }}> Email</Text>
+                            <Text>{user.email}</Text>
+                        </Box>
+                        <Box className="flex-row gap-3 justify-content-between">
+                            <Text style={{
+                                width: 200,
+                            }}>Số điện thoại</Text>
+                            <Text>{user.phoneNumber || "Không"}</Text>
+                        </Box>
+                        <Box className="flex-row gap-3 justify-content-between">
+                            <Text style={{
+                                width: 200,
+                            }}>Giới tính</Text>
+                            <Text>{user.gender === 0 ? "Nam" : "Nữ"}</Text>
+                        </Box>
                     </Box>
-                ) : (
-                    user ?
-                    (
-                        user.avatarUrl
-                    ) : <div>Không thể tải thông tin người dùng</div>
-                )}
+                    ): <div>Không thể lấy thông tin người dùng</div>  )}
             </Box>
         )}
     </Box>

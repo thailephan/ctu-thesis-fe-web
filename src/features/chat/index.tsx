@@ -9,6 +9,8 @@ import TypingListContainer from './components/typing-list-container';
 import ChatBoxContainer from "./components/chat-box-container";
 import {IChannel} from "../../common/interface";
 import ListChatChannelItem from "./components/list-chat-channel-item";
+import Screens from "../../common/screens";
+import { Link } from "react-router-dom";
 
 function ChatPage() {
     const { channels } = useAppSelector(state => state.app);
@@ -37,9 +39,9 @@ function ChatPage() {
             <Box className="flex-row flex-grow-1 justify-content-around flex-wrap gap-2 p-3" style={{ height: "100vh", }}>
                 <Card style={{ width: 350 }} className="d-none d-lg-flex">
                     <CardBody background="light-1" className="overflow-auto py-2 gap-1">
-                        {channels.map((channel: IChannel, index: any) => (
+                        {channels.length > 0 ? channels.map((channel: IChannel, index: any) => (
                             <ListChatChannelItem {...channel} key={channel.id + index}/>
-                        ))}
+                        )) : <div className="d-flex align-items-center justify-content-center flex-column h-100"><div>Không có cuộc trò chuyện nào.</div> Tìm bạn bè trong <Link to={Screens.CONTACT_SEARCH}><b><Button primary className="p-2 rounded">Liên hệ</Button></b></Link></div>}
                     </CardBody>
                 </Card>
 

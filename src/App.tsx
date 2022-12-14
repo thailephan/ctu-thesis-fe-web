@@ -1,5 +1,5 @@
 import React from "react";
-import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import {
     ForgotPasswordPage,
     ChatPage,
@@ -13,7 +13,7 @@ import {
 } from './features';
 import {AppLayout, MainLayout} from "./layout";
 import { Grommet } from "grommet";
-import { useAppSelector } from "./store";
+import {useAppDispatch, useAppSelector} from "./store";
 import Screens from "./common/screens";
 import ChangePasswordPage from "./features/account/change-password";
 import UserInformationPage from "./features/account/user-information";
@@ -22,6 +22,7 @@ import ContactFriendPage from "./features/contact/contact-friend";
 import ContactGroupPage from "./features/contact/contact-group";
 import ContactInvitationPage from "./features/contact/invitations";
 import ContactSearchPage from "./features/contact/contact-search";
+import {loadInvitations, loadUserFriends} from "./store/slices/app.slice";
 
 function App() {
     const auth = useAppSelector(state => state.auth);

@@ -121,6 +121,8 @@ export interface IUser {
     id: number
     email: string;
     fullName: string;
+    gender?: number;
+    phoneNumber?: number;
     avatarUrl?: string;
 }
 export interface IFriend {
@@ -164,7 +166,7 @@ export interface ISentInvitation {
     "fullName": string,
     "avatarUrl": string | null,
     "email": string,
-    "createdAt": number,
+    "createdAt"?: number,
 }
 
 export interface IReceivedInvitation {
@@ -172,5 +174,5 @@ export interface IReceivedInvitation {
     "fullName": string,
     "avatarUrl": string | null,
     "email": string,
-    "createdAt": number,
+    "createdAt"?: number,
 }

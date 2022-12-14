@@ -98,9 +98,9 @@ export const updateAuth = createAsyncThunk<{accessToken: string | null, user: an
             })
             if (result.data.success) {
                 thunkAPI.dispatch(loadUserChannels());
-                thunkAPI.dispatch(loadUserFriends());
-                thunkAPI.dispatch(loadGroupChats());
-                thunkAPI.dispatch(loadInvitations());
+                // thunkAPI.dispatch(loadUserFriends());
+                // thunkAPI.dispatch(loadGroupChats());
+                // thunkAPI.dispatch(loadInvitations());
                 thunkAPI.dispatch(loadUserData());
 
                 return {

@@ -52,7 +52,6 @@ export const selectChatChannel = createAsyncThunk<{
     };
     if (newChannelId) {
         socket.emit("chat/message/seen", { channelId: newChannelId });
-        console.log("Oke 1");
         result.messages = await getMesasgeByChannel({ channelId: newChannelId })
     }
     return result;
@@ -122,41 +121,37 @@ export const sendImageMessage = createAsyncThunk<any, { file: File }, { state: {
     }
 });
 export const sendAttachmentMessage = createAsyncThunk<any, { file: File }, { state: { chat: ChatState } }>
-    ("chat/sendAttachmentMessage", async (params, thunkAPI) => {
+("chat/sendAttachmentMessage", async (params, thunkAPI) => {
     const fileNameSplitor = params.file.name.split(".");
     const fileExt = fileNameSplitor[fileNameSplitor.length - 1];
-    if (['jpeg', "jpg", "png"].every(v => v !== fileExt)) {
-        alert("Chỉ được chọn ảnh có đuôi jpg, jpeg hoặc png");
-    } else {
-        const state = thunkAPI.getState().chat;
-        const formData = new FormData();
+    const state = thunkAPI.getState().chat;
+    const formData = new FormData();
 
-        formData.set("file", params.file);
+    formData.set("file", params.file);
 
-        try {
-            thunkAPI.dispatch(showPageLoading());
-            const result = await assetService.PostFormData({
-                path: "/messages/upload-attachments",
-                data: formData,
-            })
+    try {
+        thunkAPI.dispatch(showPageLoading());
+        const result = await assetService.PostFormData({
+            path: "/messages/upload-attachments",
+            data: formData,
+        })
 
-            if (result.data.success) {
-                socket.emit('chat/message/send', {
-                    message: result.data.data,
-                    channelId: state.selectedChatChannelId,
-                    messageTypeId: 3,
-                    replyForId: state.replyForId
-                });
-            } else {
-                alert("Đã có lỗi xảy ra");
-                console.log("_sendAttachmentMessage", result.data.message);
-            }
-        } catch (e) {
+        if (result.data.success) {
+            socket.emit('chat/message/send', {
+                message: result.data.data,
+                channelId: state.selectedChatChannelId,
+                messageTypeId: 3,
+                replyForId: state.replyForId
+            });
+        } else {
             alert("Đã có lỗi xảy ra");
-            console.log("_sendAttachmentMessage", e)
-        } finally {
-            thunkAPI.dispatch(hidePageLoading());
+            console.log("_sendAttachmentMessage", result.data.message);
         }
+    } catch (e) {
+        alert("Đã có lỗi xảy ra");
+        console.log("_sendAttachmentMessage", e)
+    } finally {
+        thunkAPI.dispatch(hidePageLoading());
     }
 })
 

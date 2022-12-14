@@ -47,6 +47,7 @@ function SignUpPage(props: IProps) {
             }
         } catch (e) {
            alert("Đã có lỗi xảy ra");
+            dispatch(hidePageLoading());
             console.error(e);
         }
     }

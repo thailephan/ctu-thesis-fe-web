@@ -40,11 +40,13 @@ function AccountActivatePage() {
                 } else {
                     if (activateAccountResult.data.message === "Tài khoản đã được kích hoạt rồi") {
                         setHasActivated(true);
+                        console.log(activateAccountResult.data.message);
                     } else {
-                        dispatch(showNotification({
-                            content: activateAccountResult.data.message,
-                            type: "error",
-                        }));
+                        console.log(activateAccountResult.data.message);
+                        // dispatch(showNotification({
+                        //     content: activateAccountResult.data.message,
+                        //     type: "error",
+                        // }));
                     }
                 }
                 setIsCodeExpired(false);

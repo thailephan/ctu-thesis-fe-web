@@ -48,13 +48,13 @@ const verifyToken = async () => {
             const result = await apiService.Post({
                 path: "/auth/verifyToken",
             })
+            console.log("result", result);
             if (result.data.success) {
                 return successCase;
             } else {
                 return failedCase;
             }
         } catch (e) {
-            localStorage.removeItem("token");
             return failedCase;
         }
     }
@@ -70,7 +70,7 @@ export const init = createAsyncThunk("app/init", async (params, thunkAPI) => {
         } else {
             localStorage.clear();
         }
-    } catch (e) {
+    } catch (e: any) {
         localStorage.clear();
         return failedCase;
     }
@@ -90,6 +90,7 @@ export const loadUserFriends = createAsyncThunk<IFriend[]>("app/loadUserFriends"
         const result = await apiService.Get({
             path: "/friends/getAll",
         });
+        console.log(result);
         if (result.data.success) {
             return result.data.data;
         } else {
@@ -112,7 +113,7 @@ export const loadUserChannels = createAsyncThunk<IChannel[]>("app/loadUserChanne
 
     try {
         const result = await apiService.Get({
-            path: "/channels/getAll",
+            path: "/channels/getAllWithEmptyMessageChannel",
         });
         if (result.data.success) {
             return result.data.data;
@@ -201,7 +202,9 @@ export const appSlice = createSlice({
         acceptFriendInvitation: (state, action: PayloadAction<{senderId: number}>) => {
             socket.emit("invitation/accept", { senderId: action.payload.senderId });
         },
-
+        rejectFriendInvitation: (state, action: PayloadAction<{ senderId: number }>) => {
+            socket.emit("invitation/reject", { senderId: action.payload.senderId });
+        },
 
         showNotification: (state, action: PayloadAction<{content: any, duration?: number, type?: NotificationType}>) => {
             state.notification.content = action.payload.content;
@@ -249,7 +252,7 @@ export const appSlice = createSlice({
             .addCase(loadUserFriends.fulfilled, (state, action: any) => {
                 state.isPageLoading = false;
                 state.friends = action.payload || [];
-                localStorage.setItem("friends", JSON.stringify(action.payload));
+                // localStorage.setItem("friends", JSON.stringify(action.payload));
             })
             .addCase(loadUserFriends.rejected, (state) => {
                 state.isPageLoading = false;
@@ -263,7 +266,7 @@ export const appSlice = createSlice({
                 state.isPageLoading = false;
                 console.log(action.payload);
                 state.channels = action.payload || [];
-                localStorage.setItem("channels", JSON.stringify(action.payload));
+                // localStorage.setItem("channels", JSON.stringify(action.payload));
             })
             .addCase(loadUserChannels.rejected, (state) => {
                 state.isPageLoading = false;
@@ -275,9 +278,9 @@ export const appSlice = createSlice({
             })
             .addCase(loadGroupChats.fulfilled, (state, action: any) => {
                 state.isPageLoading = false;
-                console.log(action.payload);
+                // console.log(action.payload);
                 state.groups = action.payload || [];
-                localStorage.setItem("groups", JSON.stringify(action.payload));
+                // localStorage.setItem("groups", JSON.stringify(action.payload));
             })
             .addCase(loadGroupChats.rejected, (state) => {
                 state.isPageLoading = false;
@@ -289,7 +292,7 @@ export const appSlice = createSlice({
             })
             .addCase(loadInvitations.fulfilled, (state, action: any) => {
                 state.isPageLoading = false;
-                console.log(action.payload);
+                // console.log(action.payload);
                 state.sentInvitations = action.payload.sent || [];
                 state.receivedInvitations = action.payload.received || [];
             })
@@ -303,7 +306,7 @@ export const {
     showPageLoading, hidePageLoading,
     cancelInvitation, removeSentInvitation, acceptFriendInvitation,
     showNotification, hideNotification,
-    resetAppState,
+    resetAppState, rejectFriendInvitation,
 } = appSlice.actions
 
 export default appSlice.reducer

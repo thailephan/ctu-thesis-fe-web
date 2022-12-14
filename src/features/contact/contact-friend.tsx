@@ -1,12 +1,18 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { Box, Button, Text } from "grommet";
 import { Link } from "react-router-dom";
-import {useAppSelector} from "../../store";
+import {useAppDispatch, useAppSelector} from "../../store";
 import ContactFriendItem from "./components/contact-friend-item";
 import Screens from "../../common/screens";
+import {loadUserFriends} from "../../store/slices/app.slice";
 
 function ContactFriendPage() {
+    const dispatch = useAppDispatch();
     const friends = useAppSelector(state => state.app.friends);
+
+    useEffect(() => {
+        dispatch(loadUserFriends());
+    }, [])
 
     return (<Box className="w-100 gap-2">
         {friends?.length === 0 ? (<NoFriend />) : friends.map(friend => {
